@@ -1,5 +1,17 @@
 # Hedieaty
 
-**Hedieaty** is a gift list management app developed for a mobile programming course. It simplifies creating, managing, and sharing wish lists for occasions like birthdays, weddings, and holidays. 
+**Hedieaty** is a gift list management app developed as part of a mobile programming course project. It streamlines the process of creating, managing, and sharing wish lists for various special occasions, including:
 
-Users can add gifts manually or via a barcode scanner, modify lists, and share them with friends and family. The app is built using Flutter and designed for deployment on App Store, Google Play, and Amazon App Store.
+- Birthdays
+- Weddings
+- Engagements
+- Graduations
+- Holidays
+
+
+### Technologies:
+- **Framework**: Flutter
+- **Deployment**: The app is designed for deployment on the following platforms:
+  - Apple App Store
+  - Google Play Store
+  - Amazon App Store
