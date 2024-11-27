@@ -23,7 +23,7 @@ class _SplashFrontState extends State<Splash_Front> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.teal,
+      backgroundColor: Colors.orange,
       body: Center(
         child: Text(
           "Hediety",
