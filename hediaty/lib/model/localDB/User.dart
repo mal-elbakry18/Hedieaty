@@ -1,3 +1,6 @@
+import 'package:sqflite/sqflite.dart';
+import 'Database_Class.dart';
+
 class User {
   int? id;
   String firstName;
@@ -42,5 +45,30 @@ class User {
       password: map['password'],
       image: map['image'],
     );
+  }
+
+  // Insert a User into the database
+  static Future<int> insert(User user) async {
+    Database? db = await Databaseclass().MyDataBase;
+    return await db!.insert('users', user.toMap());
+  }
+
+  // Fetch all users from the database
+  static Future<List<User>> getAll() async {
+    Database? db = await Databaseclass().MyDataBase;
+    List<Map<String, dynamic>> result = await db!.query('users');
+    return result.map((map) => User.fromMap(map)).toList();
+  }
+
+  // Update a user in the database
+  Future<int> update() async {
+    Database? db = await Databaseclass().MyDataBase;
+    return await db!.update('users', toMap(), where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Delete a user from the database
+  static Future<int> delete(int id) async {
+    Database? db = await Databaseclass().MyDataBase;
+    return await db!.delete('users', where: 'id = ?', whereArgs: [id]);
   }
 }

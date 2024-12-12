@@ -1,54 +1,46 @@
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../model/firebase/auth_services.dart';
-import '../../controllers/login_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginScreen extends StatefulWidget {
+class SignupScreen extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignupScreenState createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
-  final LoginController _loginController = LoginController();
 
-
-  void _handleGoogleLogin(BuildContext context) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await _loginController.loginWithGoogle(context);
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-  void _handleEmailLogin(BuildContext context) async {
+  Future<void> _signUp(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await _loginController.loginWithEmail(
-        context: context,
+      // Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // Update the user's display name
+      await userCredential.user!.updateDisplayName(_nameController.text.trim());
+
+      // Navigate to Home Page
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,10 +62,9 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Login',
+                'Sign Up',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -86,6 +76,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
+                    // Name Field
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 15),
+                    // Email Field
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -97,10 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                          return 'Please enter a valid email address';
+                        }
                         return null;
                       },
                     ),
                     SizedBox(height: 15),
+                    // Password Field
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -112,6 +122,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters long';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 15),
+                    // Confirm Password Field
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
                         return null;
                       },
                     ),
@@ -119,35 +148,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(height: 20),
+              // Loading Indicator or Sign Up Button
               if (_isLoading)
                 CircularProgressIndicator()
               else
                 Column(
                   children: [
                     ElevatedButton(
-                      onPressed: () => _handleEmailLogin(context),
+                      onPressed: () => _signUp(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange[800],
                         minimumSize: Size(double.infinity, 50),
                       ),
-                      child: Text('Login'),
-                    ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () => _handleGoogleLogin(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[400],
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text('Login with Google'),
+                      child: Text('Sign Up'),
                     ),
                     SizedBox(height: 10),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
+                        Navigator.pushNamed(context, '/login');
                       },
                       child: Text(
-                        'Don\'t have an account? Sign up',
+                        'Already have an account? Login',
                         style: TextStyle(color: Colors.orange[800]),
                       ),
                     ),
@@ -160,51 +181,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-
-
-//commented code
-/*void _login(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final auth = Provider.of<AuthService>(context, listen: false);
-      await auth.loginWithEmail(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }*/
-
-/*void _loginWithGoogle(BuildContext context) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final auth = Provider.of<AuthService>(context, listen: false);
-      await auth.signInWithGoogle();
-      Navigator.pushReplacementNamed(context, '/home'); // Navigate to home screen
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }*/

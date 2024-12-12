@@ -46,6 +46,10 @@ dependencies:
   intl: ^0.18.1
   sqflite: ^2.3.0
   shared_preferences: ^2.2.0
+  permission_handler: ^10.0.0
+  geolocator: ^13.0.2
+  geocoding: ^2.0.5
+
 
 dev_dependencies:
   flutter_test:
