@@ -16,7 +16,7 @@ class _SplashFrontState extends State<Splash_Front> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/Login');
+      Navigator.pushReplacementNamed(context, '/login');
     });
   }
 
