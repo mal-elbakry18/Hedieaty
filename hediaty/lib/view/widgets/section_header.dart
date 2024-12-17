@@ -5,10 +5,10 @@ class SectionHeader extends StatelessWidget {
   final VoidCallback onViewAllPressed;
 
   const SectionHeader({
-    Key? key,
+    super.key,
     required this.title,
     required this.onViewAllPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,11 +6,11 @@ class NotificationIcon extends StatelessWidget {
   final VoidCallback onPressed;
 
   const NotificationIcon({
-    Key? key,
+    super.key,
     required this.icon,
     required this.notificationCount,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +25,18 @@ class NotificationIcon extends StatelessWidget {
             right: 5,
             top: 5,
             child: Container(
-              padding: EdgeInsets.all(4),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                 minWidth: 20,
                 minHeight: 20,
               ),
               child: Text(
                 '$notificationCount',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,

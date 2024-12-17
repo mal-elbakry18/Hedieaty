@@ -89,11 +89,11 @@ class AppButton extends StatefulWidget {
   final VoidCallback onPressed;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.color,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   _AppButtonState createState() => _AppButtonState();
@@ -150,7 +150,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
           animation: _controller,
           builder: (context, child) {
             return Container(
-              padding: EdgeInsets.symmetric(vertical: 15),
+              padding: const EdgeInsets.symmetric(vertical: 15),
               width: double.infinity,
               alignment: Alignment.center,
               decoration: BoxDecoration(
