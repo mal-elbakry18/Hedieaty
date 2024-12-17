@@ -410,6 +410,8 @@ import '../../controllers/signUp_controller.dart';
 import '../../view/widgets/AppButton.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
@@ -432,7 +434,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
+        const SnackBar(content: Text('Passwords do not match')),
       );
       return;
     }
@@ -451,7 +453,7 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Signup successful!')),
+        const SnackBar(content: Text('Signup successful!')),
       );
 
       Navigator.pushReplacementNamed(context, '/home');
@@ -476,7 +478,7 @@ class _SignupScreenState extends State<SignupScreen> {
       await _signupController.signInWithGoogle();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Sign-In successful!')),
+        const SnackBar(content: Text('Google Sign-In successful!')),
       );
 
       Navigator.pushReplacementNamed(context, '/home');
@@ -497,7 +499,7 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: Colors.orange[100],
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -509,7 +511,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   color: Colors.orange[800],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Form(
                 key: _formKey,
                 child: Column(
@@ -517,7 +519,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     // First Name Field
                     TextFormField(
                       controller: _firstNameController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'First Name',
                         border: OutlineInputBorder(),
                       ),
@@ -528,11 +530,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Last Name Field
                     TextFormField(
                       controller: _lastNameController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Last Name',
                         border: OutlineInputBorder(),
                       ),
@@ -543,22 +545,22 @@ class _SignupScreenState extends State<SignupScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Phone Number Field
                     TextFormField(
                       controller: _numberController,
                       keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Phone Number',
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Email Field
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
                         border: OutlineInputBorder(),
                       ),
@@ -572,12 +574,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Password',
                         border: OutlineInputBorder(),
                       ),
@@ -591,12 +593,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     // Confirm Password Field
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Confirm Password',
                         border: OutlineInputBorder(),
                       ),
@@ -610,9 +612,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (_isLoading)
-                CircularProgressIndicator()
+                const CircularProgressIndicator()
               else
                 Column(
                   children: [
@@ -622,14 +624,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       color: Colors.orange[800]!,
                       onPressed: () => _handleSignup(context),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Google Signup Button
                     AppButton(
                       label: 'Sign In with Google',
                       color: Colors.orange[300]!,
                       onPressed: () => _handleGoogleSignIn(context),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Login Link
                     TextButton(
                       onPressed: () {

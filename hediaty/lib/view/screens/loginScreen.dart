@@ -216,6 +216,8 @@ import '../../controllers/login_controller.dart';
 import '../../view/widgets/AppButton.dart'; // Import AppButton
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -280,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: Colors.orange[100],
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Colors.orange[800],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Form(
                 key: _formKey,
                 child: Column(
@@ -301,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
                         border: OutlineInputBorder(),
                       ),
@@ -312,11 +314,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Password',
                         border: OutlineInputBorder(),
                       ),
@@ -330,9 +332,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (_isLoading)
-                CircularProgressIndicator()
+                const CircularProgressIndicator()
               else
                 Column(
                   children: [
@@ -341,13 +343,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.orange[800]!,
                       onPressed: () => _handleEmailLogin(context),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     AppButton(
                       label: 'Login with Google',
                       color: Colors.orange[300]!, // Lighter orange
                       onPressed: () => _handleGoogleLogin(context),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/signup');

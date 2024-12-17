@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'event_details.dart';
 
 class UpcomingEventsWidget extends StatelessWidget {
+  const UpcomingEventsWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Placeholder data for upcoming events

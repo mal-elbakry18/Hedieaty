@@ -499,6 +499,8 @@ import '../widgets/section_header.dart';
 import '../widgets/custom_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -527,18 +529,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(56), // Standard AppBar height
+        preferredSize: const Size.fromHeight(56), // Standard AppBar height
         child: ClipRRect(
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(16), // Rounded bottom corners
             bottomRight: Radius.circular(16),
           ),
           child: AppBar(
-            title: Text('Home'),
+            title: const Text('Home'),
             backgroundColor: Colors.orange[800],
             leading: Builder(
               builder: (context) => IconButton(
-                icon: Icon(Icons.menu),
+                icon: const Icon(Icons.menu),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
@@ -562,19 +564,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       drawer: CustomDrawer(), // Slide menu added here
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            /*Text(
               'Welcome to Hedieaty!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.orange[800],
               ),
-            ),
-            SizedBox(height: 20),
+            ),*/
+            const SizedBox(height: 20),
 
             // Buttons Section
             Row(
@@ -588,15 +590,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[800],
-                      padding: EdgeInsets.symmetric(vertical: 15),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Create Event/List',
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
-                SizedBox(width: 15),
+                const SizedBox(width: 15),
                 // Add Friend Button
                 Expanded(
                   child: ElevatedButton(
@@ -605,9 +607,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[800],
-                      padding: EdgeInsets.symmetric(vertical: 15),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Add Friend',
                       style: TextStyle(fontSize: 16),
                     ),
@@ -615,30 +617,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Upcoming Events Widget
             SectionHeader(
               title: 'Upcoming Events',
               onViewAllPressed: () {
-                Navigator.pushNamed(context, '/allEvents');
+                Navigator.pushNamed(context, '/events');
               },
             ),
             FutureBuilder<List<Map<String, dynamic>>>(
               future: _upcomingEvents,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                  return Center(child: Text('No upcoming events.'));
+                  return const Center(child: Text('No upcoming events.'));
                 } else {
                   final events = snapshot.data!;
                   return Column(
                     children: events.map((event) {
                       return Card(
-                        margin: EdgeInsets.only(bottom: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
                           title: Text(event['name']),
                           subtitle: Text(event['date']),
@@ -650,7 +652,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Friends List Widget
             SectionHeader(
@@ -663,17 +665,17 @@ class _HomeScreenState extends State<HomeScreen> {
               future: _friendsList,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                  return Center(child: Text('No friends added.'));
+                  return const Center(child: Text('No friends added.'));
                 } else {
                   final friends = snapshot.data!;
                   return Column(
                     children: friends.map((friend) {
                       return Card(
-                        margin: EdgeInsets.only(bottom: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
                           title: Text(friend['name']),
                           trailing: Icon(Icons.person, color: Colors.orange[800]),
@@ -687,7 +689,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
+      bottomNavigationBar: const BottomNavBar(
         currentIndex: 0, // Highlight Home tab
       ),
     );

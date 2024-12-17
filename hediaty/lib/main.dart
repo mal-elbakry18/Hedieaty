@@ -39,15 +39,23 @@ import '../view/screens/signUpScreen.dart';
 import '../view/screens/homeScreen.dart';
 import '../view/screens/splashScreen.dart';
 import '../view/screens/notification_screen.dart';
+import '../view/screens/create_event.dart';
+import '../view/screens/events.dart';
+import '../view/screens/add_friend.dart';
+import '../view/screens/friend_list.dart';
+import 'view/screens/event_details.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   //await NotificationService.instance.initialize();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -62,12 +70,29 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(primarySwatch: Colors.orange),
         initialRoute: '/',
         routes: {
-          '/': (context) => Splash_Front(),
-          '/login': (context) => LoginScreen(),
-          '/signup': (context) => SignupScreen(),
-          '/home': (context) => HomeScreen(),
-          '/notifications': (context) => NotificationScreen(),
-        },
+          '/': (context) => const Splash_Front(),
+          //Login and Sign Up Routing
+          '/login': (context) => const LoginScreen(),
+          '/signup': (context) => const SignupScreen(),
+          //Home Routing
+          '/home': (context) => const HomeScreen(),
+          //Notification Routing
+          '/notifications': (context) => const NotificationScreen(),
+          //Event Routing
+          '/createEvent': (context) => const CreateEventScreen(),
+          '/events': (context) => const EventsPage(),
+          '/eventDetails': (context) {
+            final eventId = ModalRoute
+                .of(context)
+                ?.settings
+                .arguments as String;
+            return EventDetailsPage(eventId: eventId);
+          },
+          //Friend Routing
+          '/friends': (context) => FriendsListScreen(),
+          '/addFriend': (context) => AddFriendScreen(),
+
+        }
       ),
     );
   }
