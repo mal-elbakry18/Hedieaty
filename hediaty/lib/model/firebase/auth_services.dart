@@ -95,6 +95,29 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> saveUserToFirestore(User user) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    final userData = {
+      'name': user.displayName ?? "User", // Use displayName if available
+      'email': user.email,
+      'phone': user.phoneNumber ?? "",
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    await userDoc.set(userData, SetOptions(merge: true)); // Avoid overwriting existing fields
+  }
+  Future<Map<String, dynamic>?> getUserDetails(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      return userDoc.exists ? userDoc.data() : null;
+    } catch (e) {
+      print("Error fetching user details: $e");
+      return null;
+    }
+  }
+
+
   // Email Sign Up
   Future<User?> signUpWithEmail(String email, String password, String name) async {
     try {
@@ -113,7 +136,7 @@ class AuthService {
       return userCredential.user;
     } catch (e) {
       print(e);
-      throw e;
+      rethrow;
     }
   }
 
@@ -127,7 +150,7 @@ class AuthService {
       return userCredential.user;
     } catch (e) {
       print(e);
-      throw e;
+      rethrow;
     }
   }
 
@@ -160,23 +183,7 @@ class AuthService {
       return userCredential.user;
     } catch (e) {
       print(e);
-      throw e;
-    }
-  }
-
-  // Fetch User Details from Firestore
-  Future<Map<String, dynamic>?> getUserDetails(String uid) async {
-    try {
-      DocumentSnapshot userDoc =
-      await _firestore.collection('users').doc(uid).get();
-
-      if (userDoc.exists) {
-        return userDoc.data() as Map<String, dynamic>?;
-      }
-      return null;
-    } catch (e) {
-      print(e);
-      throw e;
+      rethrow;
     }
   }
 
