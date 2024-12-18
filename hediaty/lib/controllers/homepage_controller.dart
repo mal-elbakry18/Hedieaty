@@ -1,3 +1,4 @@
+//Last Working Code
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomepageController {
@@ -49,4 +50,19 @@ class HomepageController {
       throw Exception('Error fetching notifications: $e');
     }
   }
+// Fetch Friends List Stream
+  Stream<List<Map<String, dynamic>>> fetchFriendsStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('friends')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+
 }
+
+
