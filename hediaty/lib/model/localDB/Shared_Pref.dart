@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemePreferenceExample extends StatefulWidget {
+  const ThemePreferenceExample({super.key});
+
   @override
   _ThemePreferenceExampleState createState() => _ThemePreferenceExampleState();
 }
@@ -44,11 +46,11 @@ class _ThemePreferenceExampleState extends State<ThemePreferenceExample> {
       theme: _isDarkTheme ? ThemeData.dark() : ThemeData.light(),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Theme Preference Example'),
+          title: const Text('Theme Preference Example'),
         ),
         body: Center(
           child: SwitchListTile(
-            title: Text('Enable Dark Theme'),
+            title: const Text('Enable Dark Theme'),
             value: _isDarkTheme,
             onChanged: (value) {
               _saveThemePreference(value);

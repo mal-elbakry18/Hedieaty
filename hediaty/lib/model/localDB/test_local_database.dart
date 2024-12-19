@@ -8,7 +8,7 @@ void main() async {
   // Test your database
   await testDatabase(db);
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 Future<void> testDatabase(Databaseclass db) async {
@@ -64,14 +64,16 @@ Future<void> testDatabase(Databaseclass db) async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Database Test'),
+          title: const Text('Database Test'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('Check your console for database operations.'),
         ),
       ),

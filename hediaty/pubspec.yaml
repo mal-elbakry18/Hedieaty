@@ -27,6 +27,7 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+
 dependencies:
 
   flutter:
@@ -49,8 +50,13 @@ dependencies:
   permission_handler: ^10.0.0
   geolocator: ^13.0.2
   geocoding: ^2.0.5
+  firebase_messaging: ^15.1.6
+  flutter_local_notifications_linux: ^3.0.0
+  image_picker: ^1.0.4
 
 
+
+  path: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
