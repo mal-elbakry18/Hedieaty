@@ -462,8 +462,7 @@ class FriendController {
     }
   }
 }
-*/
-
+*//*
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -471,15 +470,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class FriendController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Generate Username
-  String _generateUsername(String firstName, String lastName) {
-    final random = Random();
-    int randomNumber = random.nextInt(9999);
-    return "${firstName.toLowerCase()}_${lastName.toLowerCase()}_$randomNumber";
-  }
-
   // Add Friend by Phone Number
-  Future<void> addFriend(String friendPhone) async {
+ /* Future<void> addFriend(String friendPhone) async {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) throw Exception("User not logged in.");
@@ -533,7 +525,43 @@ class FriendController {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
+*/
 
+  // Search for a user by phone number
+  Future<Map<String, dynamic>?> searchFriendByPhone(String phone) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('number', isEqualTo: phone)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.data();
+      } else {
+        return null; // No user found
+      }
+    } catch (e) {
+      print('Error searching friend: $e');
+      return null;
+    }
+  }
+// Add friendship
+  Future<void> addFriendship(String currentUserId, String friendUserId) async {
+    try {
+      final friendshipId = _firestore.collection('friendships').doc().id;
+
+      await _firestore.collection('friendships').doc(friendshipId).set({
+        'friendship_id': friendshipId,
+        'user1': currentUserId,
+        'user2': friendUserId,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+      print('Friendship added with ID: $friendshipId');
+    } catch (e) {
+      print('Error adding friendship: $e');
+    }
+  }
   // Fetch Friends List
   Stream<List<Map<String, dynamic>>> fetchFriends() {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -553,4 +581,151 @@ class FriendController {
       };
     }).toList());
   }
+
+  //New code to fetch friends
+  // Get a stream of friends for the current user
+  Stream<List<Map<String, dynamic>>> getFriendsStream(String currentUserId) {
+    return _firestore
+        .collection('friendships')
+        .where('user1', isEqualTo: currentUserId)
+        .snapshots()
+        .asyncMap((querySnapshot) async {
+      // Fetch details for each friend from users collection
+      List<Map<String, dynamic>> friends = [];
+      for (var doc in querySnapshot.docs) {
+        String friendId = doc.data()['user2'];
+        final userDoc = await _firestore.collection('users').doc(friendId).get();
+        if (userDoc.exists) {
+          friends.add(userDoc.data()!);
+        }
+      }
+      return friends;
+    });
+  }
+}x
+*/
+
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class FriendController {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Stream to fetch friends
+  Stream<List<Map<String, dynamic>>> fetchFriends() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      throw Exception("User not logged in.");
+    }
+
+    // Listen to changes in the user's friends list
+    return _firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists) {
+        return [];
+      }
+
+      final friendsArray = snapshot.data()?['friends'] ?? [];
+      return List<Map<String, dynamic>>.from(friendsArray);
+    });
+  }
+
+  // Add a friend by phone number
+  Future<void> addFriendByPhone(String phoneNumber) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        throw Exception("User not logged in.");
+      }
+
+      // Fetch current user data
+      final currentUserDoc =
+      await _firestore.collection('users').doc(currentUser.uid).get();
+      if (!currentUserDoc.exists) {
+        throw Exception("Current user document not found.");
+      }
+
+      final currentUserData = currentUserDoc.data();
+      final currentUserId = currentUserData?['user_id'];
+
+      // Search for the friend by phone number
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('number', isEqualTo: phoneNumber)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception("No user found with the given phone number.");
+      }
+
+      final friendDoc = querySnapshot.docs.first;
+      final friendData = friendDoc.data();
+      final friendId = friendData['user_id'];
+
+      // Check if friendship already exists
+      final friendshipId = ([currentUserId, friendId]..sort()).join();
+
+      final existingFriendship = await _firestore
+          .collection('friendships')
+          .doc(friendshipId)
+          .get();
+
+      if (existingFriendship.exists) {
+        throw Exception("Friendship already exists.");
+      }
+
+      // Create friendship
+      await _firestore.collection('friendships').doc(friendshipId).set({
+        'user1_id': currentUserId,
+        'user2_id': friendId,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+      // Add to both users' friends array
+      final newFriend = {'friend_id': friendId, 'friendship_id': friendshipId};
+      await _firestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .update({'friends': FieldValue.arrayUnion([newFriend])});
+
+      final reciprocalFriend = {
+        'friend_id': currentUserId,
+        'friendship_id': friendshipId,
+      };
+      await _firestore
+          .collection('users')
+          .doc(friendDoc.id)
+          .update({'friends': FieldValue.arrayUnion([reciprocalFriend])});
+
+      print("Friend added successfully!");
+    } catch (e) {
+      print("Error adding friend: $e");
+      throw Exception("Error adding friend: $e");
+    }
+  }
+
+  Future<void> deleteFriend(String friendId, String friendshipId) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception("User not logged in.");
+
+    // Remove the friendship for both users
+    await _firestore.collection('users').doc(userId).update({
+      'friends': FieldValue.arrayRemove([{'friend_id': friendId, 'friendship_id': friendshipId}]),
+    });
+
+    await _firestore.collection('users').doc(friendId).update({
+      'friends': FieldValue.arrayRemove([{'friend_id': userId, 'friendship_id': friendshipId}]),
+    });
+
+    // Delete the friendship record
+    await _firestore.collection('friendships').doc(friendshipId).delete();
+
+    print("Friend deleted successfully!");
+  }
+
 }

@@ -95,7 +95,7 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> saveUserToFirestore(User user) async {
+ /* Future<void> saveUserToFirestore(User user) async {
     final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
 
     final userData = {
@@ -107,6 +107,137 @@ class AuthService {
 
     await userDoc.set(userData, SetOptions(merge: true)); // Avoid overwriting existing fields
   }
+  */
+  /*Future<void> saveUserToFirestore(User user) async {
+    final userDoc = _firestore.collection('users').doc(user.uid);
+
+    // Check if user already exists
+    final existingUser = await userDoc.get();
+    if (existingUser.exists) return;
+
+    // Generate unique user ID (incremental integer)
+    final userIdDoc = _firestore.collection('metadata').doc('user_count');
+    await _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userIdDoc);
+      int currentId = !snapshot.exists ? snapshot.data() != null?0 : ['count'] ?? 0;
+      transaction.set(userIdDoc, {'count': currentId + 1});
+    });
+
+    // Fetch the incremented ID
+    final userIdSnapshot = await userIdDoc.get();
+    final userId = userIdSnapshot.data()?['count'];
+
+    // Generate a random username if none exists
+    final generatedUsername = user.displayName ?? 'User${userId.toString().padLeft(6, '0')}';
+
+    // Prepare user data
+    final userData = {
+      'userId': userId, // Unique integer ID
+      'username': generatedUsername,
+      'name': user.displayName ?? "User",
+      'email': user.email,
+      'phone': user.phoneNumber ?? "",
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    // Save user data to Firestore
+    await userDoc.set(userData, SetOptions(merge: true));
+  }*/
+  /*Future<void> saveUserToFirestore(User user) async {
+    final userDoc = _firestore.collection('users').doc(user.uid);
+
+    // Check if user already exists
+    final existingUser = await userDoc.get();
+    if (existingUser.exists) return;
+
+    // Reference to the user count document
+    final userIdDoc = _firestore.collection('metadata').doc('user_count');
+
+    // Increment the user count in a transaction
+    int userId;
+    await _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userIdDoc);
+
+      // Initialize or increment the user count
+      int currentId = snapshot.exists
+          ? (snapshot.data()?['count'] ?? 0)
+          : 0;
+
+
+      userId = currentId + 1;
+
+      // Update the count in Firestore
+      transaction.set(userIdDoc, {'count': userId});
+    });
+
+    // Generate a random username if none exists
+    final generatedUsername = user.displayName ?? 'User${userId.toString().padLeft(6, '0')}';
+
+    // Prepare user data
+    final userData = {
+      'userId': userId, // Unique integer ID
+      'username': generatedUsername,
+      'name': user.displayName ?? "User",
+      'email': user.email,
+      'phone': user.phoneNumber ?? "",
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    // Save user data to Firestore
+    await userDoc.set(userData, SetOptions(merge: true));
+  }*/
+  Future<void> saveUserToFirestore(User user) async {
+    final userDoc = _firestore.collection('users').doc(user.uid);
+
+    // Check if user already exists
+    final existingUser = await userDoc.get();
+    if (existingUser.exists) return;
+
+    // Reference to the user count document
+    final userIdDoc = _firestore.collection('metadata').doc('user_count');
+
+    // Declare userId as nullable
+    int? userId;
+
+    // Increment the user count in a transaction
+    await _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userIdDoc);
+
+      // Initialize or increment the user count
+      int currentId = snapshot.exists
+          ? (snapshot.data()?['count'] ?? 0)
+          : 0;
+
+      userId = currentId + 1;
+
+      // Update the count in Firestore
+      transaction.set(userIdDoc, {'count': userId});
+    });
+
+    // Safely use userId after ensuring it is not null
+    if (userId == null) {
+      throw Exception('Failed to generate user ID');
+    }
+
+    // Generate a random username if none exists
+    final generatedUsername = user.displayName ?? 'User${userId.toString().padLeft(6, '0')}';
+
+    // Prepare user data
+    final userData = {
+      'userId': userId, // Unique integer ID
+      'username': generatedUsername,
+      'name': user.displayName ?? "User",
+      'email': user.email,
+      'phone': user.phoneNumber ?? "",
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    // Save user data to Firestore
+    await userDoc.set(userData, SetOptions(merge: true));
+  }
+
+
+
   Future<Map<String, dynamic>?> getUserDetails(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
