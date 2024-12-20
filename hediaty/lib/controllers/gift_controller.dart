@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class GiftController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
   Future<void> addGift({
     required String name,
     required String description,
@@ -14,17 +15,30 @@ class GiftController {
   }) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) throw Exception("User not logged in");
+    // Prevent duplicates
+    final existingGifts = await _firestore
+        .collection('gifts')
+        .where('createdBy', isEqualTo: userId)
+        .where('name', isEqualTo: name)
+        .where('description', isEqualTo: description)
+        .where('purchaseUrl', isEqualTo: purchaseUrl ?? '')
+        .get();
+
+    if (existingGifts.docs.isNotEmpty) {
+      throw Exception("This gift already exists in your collection.");
+    }
 
     await _firestore.collection('gifts').add({
       'name': name,
       'description': description,
       'category': category,
-      'imageUrl': imageUrl ?? '', // Default to an empty string if null
-      'status': status, // Use provided status or default to 'available'
+      'imageUrl': imageUrl != null && imageUrl.isNotEmpty ? imageUrl : '', // Avoid invalid URLs
+      'status': status,
       'purchaseUrl': purchaseUrl ?? '',
       'createdBy': userId,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
   }
 
 
@@ -78,10 +92,12 @@ class GiftController {
       throw Exception("This gift is already added to the event.");
     }
 
-    await eventGiftsRef.set(gift);
+    await eventGiftsRef.set({
+      ...gift,
+      'addedAt': FieldValue.serverTimestamp(),
+    });
   }
 
-  // Fetch Gifts for an Event
   Stream<List<Map<String, dynamic>>> fetchEventGifts(String eventId) {
     return _firestore
         .collection('events')
@@ -91,6 +107,7 @@ class GiftController {
         .map((snapshot) =>
         snapshot.docs.map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>}).toList());
   }
+
   Stream<List<Map<String, dynamic>>> fetchGifts({String? statusFilter}) {
     return _firestore.collection('gifts')
         .where('status', isEqualTo: statusFilter ?? 'available') // Filter by status if provided
@@ -110,5 +127,49 @@ class GiftController {
       }).toList();
     });
   }
+
+  Future<void> removeGiftFromEvent({
+    required String eventId,
+    required String giftId,
+  }) async {
+    final eventGiftsRef = _firestore
+        .collection('events')
+        .doc(eventId)
+        .collection('event_gifts')
+        .doc(giftId);
+
+    await eventGiftsRef.delete();
+  }
+
+  //Pledge Gift
+// Pledge a gift for an event
+  Future<void> pledgeGift({
+    required String eventId,
+    required String giftId,
+  }) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception("User not logged in.");
+
+    final giftRef = _firestore.collection('gifts').doc(giftId);
+    final giftSnapshot = await giftRef.get();
+
+    if (!giftSnapshot.exists) {
+      throw Exception("Gift not found.");
+    }
+
+    // Update the gift status to pledged
+    await giftRef.update({'status': 'pledged', 'pledgedBy': userId, 'pledgedAt': FieldValue.serverTimestamp()});
+
+    // Add the gift to the event's pledged gifts
+    final eventGiftsRef = _firestore.collection('events').doc(eventId).collection('pledged_gifts');
+    await eventGiftsRef.doc(giftId).set({
+      ...giftSnapshot.data()!,
+      'pledgedBy': userId,
+      'pledgedAt': FieldValue.serverTimestamp(),
+    });
+
+    print("Gift pledged successfully!");
+  }
+
 
 }

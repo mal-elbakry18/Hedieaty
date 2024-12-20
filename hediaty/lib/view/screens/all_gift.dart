@@ -63,7 +63,9 @@ class GiftScreen extends StatelessWidget {
   }
 }
 */
-import 'package:flutter/material.dart';
+//Last working code
+
+/*import 'package:flutter/material.dart';
 import '../../controllers/gift_controller.dart';
 
 class GiftScreen extends StatefulWidget {
@@ -295,3 +297,86 @@ class _GiftScreenState extends State<GiftScreen> {
     );
   }
 }
+*/
+
+
+import 'package:flutter/material.dart';
+import '../../controllers/gift_controller.dart';
+
+class GiftScreen extends StatefulWidget {
+  final String? statusFilter; // Optional filter for gifts
+
+  const GiftScreen({super.key, this.statusFilter});
+
+  @override
+  _GiftScreenState createState() => _GiftScreenState();
+}
+
+class _GiftScreenState extends State<GiftScreen> {
+  final GiftController _giftController = GiftController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.statusFilter == 'pledged' ? 'Pledged Gifts' : 'My Gifts',
+        ),
+        backgroundColor: Colors.orange[800],
+      ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _giftController.fetchGifts(statusFilter: widget.statusFilter),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No gifts found.'));
+          } else {
+            final gifts = snapshot.data!;
+            return ListView.builder(
+              itemCount: gifts.length,
+              itemBuilder: (context, index) {
+                final gift = gifts[index];
+                return Card(
+                  margin: const EdgeInsets.all(10),
+                  child: ListTile(
+                      leading: gift['imageUrl'] != null && gift['imageUrl'].isNotEmpty
+                          ? Image.network(
+                        gift['imageUrl'],
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
+                      )
+                          : const Icon(Icons.card_giftcard, size: 50),
+                    title: Text(gift['name']),
+                    subtitle: Text('Category: ${gift['category']}'),
+                    trailing: Text(
+                      gift['status'] ?? 'Available',
+                      style: TextStyle(
+                        color: gift['status'] == 'pledged'
+                            ? Colors.orange
+                            : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange[800],
+        onPressed: () {
+          Navigator.pushNamed(context, '/addGift'); // Navigate to Add Gift Screen
+        },
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+}
+
