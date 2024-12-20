@@ -136,7 +136,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     if (user != null) {
       final userDetails = await AuthService().getUserDetails(user.uid);
       setState(() {
-        userName = userDetails?['first_name'] ?? "User"; // Fallback to 'User'
+        userName = userDetails?['username'] ?? "User"; // Fallback to 'User'
       });
     }
   }

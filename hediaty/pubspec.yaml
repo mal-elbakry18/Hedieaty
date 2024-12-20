@@ -51,9 +51,8 @@ dependencies:
   geolocator: ^13.0.2
   geocoding: ^2.0.5
   firebase_messaging: ^15.1.6
-  flutter_local_notifications_linux: ^3.0.0
   image_picker: ^1.0.4
-
+  flutter_animate: ^4.0.0
 
 
   path: any

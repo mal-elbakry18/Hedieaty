@@ -234,3 +234,192 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   }
 }
 */
+/*
+import 'package:flutter/material.dart';
+import '/controllers/friend_controller.dart';
+
+class AddFriendScreen extends StatefulWidget {
+  final String currentUserId;
+
+  const AddFriendScreen({super.key, required this.currentUserId});
+
+  @override
+  _AddFriendScreenState createState() => _AddFriendScreenState();
+}
+
+class _AddFriendScreenState extends State<AddFriendScreen> {
+  final TextEditingController _phoneController = TextEditingController();
+  final FriendController _friendController = FriendController();
+  Map<String, dynamic>? _friendData;
+
+  void _searchFriend() async {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) return;
+
+    final friend = await _friendController.searchFriendByPhone(phone);
+
+    if (friend != null) {
+      setState(() {
+        _friendData = friend;
+      });
+
+      _showFriendConfirmation(friend);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No user found with this phone number')),
+      );
+    }
+  }
+
+  void _showFriendConfirmation(Map<String, dynamic> friend) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 300,
+          child: Column(
+            children: [
+              Text(
+                'Confirm Friend',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 20),
+              Text('Username: ${friend['username']}'),
+              Text('Phone: ${friend['number']}'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  await _friendController.addFriendship(
+                    widget.currentUserId,
+                    friend['user_id'],
+                  );
+                  Navigator.pop(context); // Close bottom sheet
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Friend added successfully!')),
+                  );
+                },
+                child: const Text('Add Friend'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Friend'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Enter Phone Number',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _searchFriend,
+              child: const Text('Search'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+*/
+
+//new code
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import '/../controllers/friend_controller.dart';
+
+class AddFriendScreen extends StatefulWidget {
+  const AddFriendScreen({super.key});
+
+  @override
+  State<AddFriendScreen> createState() => _AddFriendScreenState();
+}
+
+class _AddFriendScreenState extends State<AddFriendScreen> {
+  final TextEditingController _phoneController = TextEditingController();
+  final FriendController _friendController = FriendController();
+
+  bool _isLoading = false;
+
+  Future<void> _addFriend() async {
+    final phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Enter a phone number')));
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _friendController.addFriendByPhone(phoneNumber);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Friend added successfully!')),
+      );
+      Navigator.pop(context); // Go back after success
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding friend: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Friend'),
+        backgroundColor: Colors.orange[800],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Friend\'s Phone Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+              onPressed: _addFriend,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange[800],
+              ),
+              child: const Text('Add Friend'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

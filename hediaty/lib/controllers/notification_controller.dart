@@ -1,280 +1,174 @@
-/*import 'dart:async';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await NotificationService.instance.setupFlutterNotifications();
-  await NotificationService.instance.showNotification(message);
-}
+class NotificationController {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-class NotificationService {
-  NotificationService._();
-  static final NotificationService instance = NotificationService._();
-
-  final _messaging = FirebaseMessaging.instance;
-  final _localNotifications = FlutterLocalNotificationsPlugin();
-  final _firestore = FirebaseFirestore.instance;
-  bool _isFlutterLocalNotificationsInitialized = false;
-
-  Future<void> initialize() async {
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Request permission
-    await _requestPermission();
-
-    // Setup message handlers
-    await _setupMessageHandlers();
-
-    // Optional: Get FCM token
-    final token = await _messaging.getToken();
-    print('FCM Token: $token');
-  }
-
-  Future<void> _requestPermission() async {
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-  }
-
-  Future<void> setupFlutterNotifications() async {
-    if (_isFlutterLocalNotificationsInitialized) return;
-
-    // Android Notification Channel
-    const channel = AndroidNotificationChannel(
-      'hedieaty_channel', // Unique ID for the channel
-      'Hedieaty Notifications',
-      description: 'Notifications for Hedieaty app.',
-      importance: Importance.high,
-    );
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    const initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    // iOS setup
-    final initializationSettingsDarwin = DarwinInitializationSettings();
-
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
-
-    // Initialize local notifications
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // TODO: Handle notification click
-      },
-    );
-
-    _isFlutterLocalNotificationsInitialized = true;
-  }
-
-  Future<void> showNotification(RemoteMessage message) async {
-    final notification = message.notification;
-    final android = message.notification?.android;
-
-    if (notification != null && android != null) {
-      await _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'hedieaty_channel',
-            'Hedieaty Notifications',
-            channelDescription: 'Notifications for Hedieaty app.',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-        ),
-      );
-
-      // Store notification in Firestore
-      await _firestore.collection('notifications').add({
-        'title': notification.title,
-        'body': notification.body,
-        'timestamp': FieldValue.serverTimestamp(),
-        'isRead': false, // Mark as unread initially
-      });
+  /// Stream for unread notifications count
+  Stream<int> getUnreadNotificationCountStream() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Stream.empty();
     }
+
+    return _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('isRead', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
   }
 
-
-
-
-
-
-  Future<void> _setupMessageHandlers() async {
-    // Foreground message handler
-    FirebaseMessaging.onMessage.listen((message) {
-      showNotification(message);
-    });
-
-    // Background message handler
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      // Handle click on notification
-    });
-
-    // When app is opened from notification
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      // Handle notification
+  /// Stream for all notifications for the current user
+  Stream<List<Map<String, dynamic>>> getNotificationsStream() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Stream.empty();
     }
+
+    return _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUser.uid)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Include notification ID
+        return data;
+      }).toList();
+    });
   }
-}*/
-/*
-import 'dart:async';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await NotificationService.instance.setupFlutterNotifications();
-  await NotificationService.instance.showNotification(message);
-}
+  /// Stream for real-time notifications
+  Stream<Map<String, dynamic>> getNewNotificationStream() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return const Stream.empty();
+    }
 
-class NotificationService {
-  NotificationService._();
-  static final NotificationService instance = NotificationService._();
-
-  final _messaging = FirebaseMessaging.instance;
-  final _localNotifications = FlutterLocalNotificationsPlugin();
-  final _firestore = FirebaseFirestore.instance;
-  bool _isFlutterLocalNotificationsInitialized = false;
-
-  Future<void> initialize() async {
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Request permission
-    await _requestPermission();
-
-    // Setup message handlers
-    await _setupMessageHandlers();
-
-    // Get FCM token and save it to Firestore
-    try {
-      final token = await _messaging.getToken();
-      if (token != null) {
-        final userId = FirebaseAuth.instance.currentUser?.uid;
-        if (userId != null) {
-          await _firestore.collection('users').doc(userId).update({
-            'fcmToken': token,
-          });
-        }
-        print('FCM Token: $token');
+    return _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUser.uid)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        final latest = snapshot.docs.first;
+        return {
+          ...latest.data(),
+          'id': latest.id,
+        };
       }
-    } catch (e) {
-      print('Error fetching FCM token: $e');
+      return {};
+    });
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllAsRead() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final snapshot = await _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    final batch = _firestore.batch();
+
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {'isRead': true});
     }
+
+    await batch.commit();
   }
 
-  Future<void> _requestPermission() async {
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+  /// Clear all notifications
+  Future<void> clearAllNotifications() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final snapshot = await _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: currentUser.uid)
+        .get();
+
+    final batch = _firestore.batch();
+
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
   }
 
-  Future<void> setupFlutterNotifications() async {
-    if (_isFlutterLocalNotificationsInitialized) return;
-
-    // Android Notification Channel
-    const channel = AndroidNotificationChannel(
-      'hedieaty_channel', // Unique ID for the channel
-      'Hedieaty Notifications',
-      description: 'Notifications for Hedieaty app.',
-      importance: Importance.high,
-    );
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    const initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    final initializationSettingsDarwin = DarwinInitializationSettings();
-
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
-
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        print('Notification clicked: ${details.payload}');
-      },
-    );
-
-    _isFlutterLocalNotificationsInitialized = true;
-  }
-
-  Future<void> showNotification(RemoteMessage message) async {
-    final notification = message.notification;
-    final android = message.notification?.android;
-
-    if (notification != null && android != null) {
-      await _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'hedieaty_channel',
-            'Hedieaty Notifications',
-            channelDescription: 'Notifications for Hedieaty app.',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-        ),
-      );
-
-      // Store notification in Firestore
+  /// Send a notification to a specific user
+  Future<void> sendNotification({
+    required String userId,
+    required String title,
+    required String message,
+  }) async {
+    try {
       await _firestore.collection('notifications').add({
-        'title': notification.title,
-        'body': notification.body,
+        'userId': userId,
+        'title': title,
+        'message': message,
+        'isRead': false,
         'timestamp': FieldValue.serverTimestamp(),
-        'isRead': false, // Mark as unread initially
       });
+    } catch (e) {
+      throw Exception('Error sending notification: $e');
     }
   }
 
-  Future<void> _setupMessageHandlers() async {
-    // Foreground message handler
-    FirebaseMessaging.onMessage.listen((message) {
-      showNotification(message);
-    });
+  /// Generate notifications for a gift pledge
+  Future<void> notifyGiftPledge({
+    required String eventId,
+    required String giftName,
+    required String pledgedByUserId,
+    required String eventCreatorId,
+  }) async {
+    final pledgedByUserDoc = await _firestore.collection('users').doc(pledgedByUserId).get();
+    final pledgedByUsername = pledgedByUserDoc.data()?['name'] ?? 'Unknown';
 
-    // Background message handler
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      // Handle click on notification
-      print('Notification clicked in background: ${message.data}');
-    });
+    await sendNotification(
+      userId: eventCreatorId,
+      title: 'Gift Pledged',
+      message: '$pledgedByUsername pledged "$giftName" for your event.',
+    );
+  }
 
-    // When app is opened from notification
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      // Handle notification
-      print('App opened from notification: ${initialMessage.data}');
+  /// Generate notifications for a new friend addition
+  Future<void> notifyFriendAdded({
+    required String friendUserId,
+    required String addedByUserId,
+  }) async {
+    final addedByUserDoc = await _firestore.collection('users').doc(addedByUserId).get();
+    final addedByUsername = addedByUserDoc.data()?['name'] ?? 'Unknown';
+
+    await sendNotification(
+      userId: friendUserId,
+      title: 'New Friend Added',
+      message: '$addedByUsername has added you as a friend.',
+    );
+  }
+
+  /// Generate notifications for a new event
+  Future<void> notifyNewEvent({
+    required String eventName,
+    required String creatorId,
+  }) async {
+    final friendsSnapshot = await _firestore.collection('users').doc(creatorId).collection('friends').get();
+
+    for (final friend in friendsSnapshot.docs) {
+      final friendUserId = friend.id;
+
+      await sendNotification(
+        userId: friendUserId,
+        title: 'New Event',
+        message: 'Your friend has created a new event: "$eventName".',
+      );
     }
   }
 }
- */
-
-
-
-

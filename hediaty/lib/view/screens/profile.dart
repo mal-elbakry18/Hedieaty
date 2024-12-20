@@ -106,20 +106,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text("Email: ${FirebaseAuth.instance.currentUser?.email}"),
             const SizedBox(height: 24),
 
-            // Buttons
             ListTile(
               leading: const Icon(Icons.card_giftcard),
               title: const Text('Pledged Gifts'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          GiftScreen(statusFilter: 'pledged')),
-                );
+                Navigator.pushNamed(context, '/pledgedGifts');
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.list_alt),
               title: const Text('My Gifts'),

@@ -15,17 +15,26 @@ class ProfileController {
   }
 
   // Update User Profile Photo
-  Future<void> updateProfilePhoto(String photoUrl) async {
+ /* Future<void> updateProfilePhoto(String photoUrl) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception("User not logged in");
 
     await _firestore.collection('users').doc(userId).update({
       'photoUrl': photoUrl,
     });
+  }*/
+  Future<void> updateProfilePhoto(String photoUrl) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception("User not logged in.");
+
+    await _firestore.collection('users').doc(userId).update({'photoUrl': photoUrl});
   }
 
   // Sign Out
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+
+
 }
