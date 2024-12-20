@@ -17,5 +17,6 @@ class LoginController {
     final auth = Provider.of<AuthService>(context, listen: false);
     await auth.signInWithGoogle();
   }
+
 }
 
